@@ -1,14 +1,20 @@
 # src/main.py
 from src.db.connection import init_db, Session
-from src.db.model import insert_user, list_users, update_user, get_user_by_email, delete_user, Usuario
+from src.db.model import insert_user, list_users, update_user, get_user_by_email, delete_user, Usuario, drop_users_table
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.orm import sessionmaker
+
 
 # Inicializa o banco de dados (sem app)
 init_db()
 
 if __name__ == '__main__':
 
+    #drop_users_table()
+
+
     # Chama a função de inserção diretamente
-    #insert_user('Gabi3', 'gabi3@email.com', '33313')  # Inserindo um usuário com senha
+    #insert_user('Gabi3f', 'gabi3f@email.com', '33313f', '12345678902','11987654321')
     #print("Usuário inserido com sucesso!")
 
     # Lista todos os usuários
@@ -16,6 +22,8 @@ if __name__ == '__main__':
     #print("Usuários cadastrados:")
     #for usuario in usuarios:
         #print(usuario)
+
+    #update_user(user_id=1, nome="Gabi Atualizada", email="gabi_novo@email.com", senha="nova_senha", cpf="98765432100",contato="11912345678")
 
     # Atualiza o usuário com ID 5
     #user_id_to_update = 0
