@@ -10,9 +10,6 @@ init_db()
 
 if __name__ == '__main__':
 
-    #drop_users_table()
-
-
     # Chama a função de inserção diretamente
     #insert_user('Gabi3f', 'gabi3f@email.com', '33313f', '12345678902','11987654321')
     #print("Usuário inserido com sucesso!")

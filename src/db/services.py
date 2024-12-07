@@ -82,10 +82,16 @@ def criar_agendamento():
     except Exception as e:
         return jsonify({"message": f"Erro ao criar agendamento: {e}"}), 500
 
+
 @app.route('/agendamentos', methods=['GET'])
 def listar_agendamentos():
+    cpf = request.args.get('cpf')
+
+    if not cpf:
+        return jsonify({"message": "CPF é obrigatório para listar agendamentos"}), 400
+
     try:
-        agendamentos = get_agendamentos()
+        agendamentos = get_agendamentos(cpf)  # Função para buscar agendamentos filtrados pelo CPF
         return jsonify([{
             "id": agendamento.id,
             "nome": agendamento.nome,
