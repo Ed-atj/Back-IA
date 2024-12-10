@@ -12,7 +12,7 @@ services:
       - DATABASE_USERNAME=root
       - DATABASE_PASSWORD=root
     ports:
-      - "8001:8000"
+      - "5000:5000"
     volumes:
       - .:/app
 
