@@ -12,4 +12,6 @@ def home():
     return "Welcome to the User Management API!"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.config['ENV'] = 'production'
+    app.config['DEBUG'] = False
+    app.run(host='0.0.0.0', port=5000)

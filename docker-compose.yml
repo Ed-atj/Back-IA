@@ -3,18 +3,19 @@ services:
     build: .
     container_name: python_app
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
     environment:
       - DATABASE_HOST=mysql
       - DATABASE_PORT=3306
       - DATABASE_NAME=teste
       - DATABASE_USERNAME=root
       - DATABASE_PASSWORD=root
+      - FLASK_ENV=production  # Configurar Flask para rodar em produção
     ports:
-      - "8001:8000"
+      - "5000:5000"
     volumes:
-      - .:/app
+      - .:/app  # Somente para desenvolvimento. Remover em produção!
+    restart: always  # Garante que o contêiner reinicie automaticamente em caso de falhas.
 
   mysql:
     image: mysql:8.0
@@ -22,8 +23,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: teste
-      MYSQL_PASSWORD: root
       MYSQL_USER: root
+      MYSQL_PASSWORD: root
     ports:
       - "3307:3306"
     volumes:
@@ -33,6 +34,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    restart: always
 
 volumes:
   mysql_data:
