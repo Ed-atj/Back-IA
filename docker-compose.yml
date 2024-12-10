@@ -8,7 +8,7 @@ services:
     environment:
       - DATABASE_HOST=mysql
       - DATABASE_PORT=3306
-      - DATABASE_NAME=back
+      - DATABASE_NAME=teste
       - DATABASE_USERNAME=root
       - DATABASE_PASSWORD=root
     ports:
@@ -19,12 +19,11 @@ services:
   mysql:
     image: mysql:8.0
     container_name: mysql_db
-    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: back
-      MYSQL_USER: root
+      MYSQL_DATABASE: teste
       MYSQL_PASSWORD: root
+      MYSQL_USER: root
     ports:
       - "3307:3306"
     volumes:
