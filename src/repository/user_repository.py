@@ -10,20 +10,14 @@ class UsuarioRepository:
     def __init__(self, session: Session = None):
         self.session = session or DBSession()
 
-    def insert_user(self, nome, email, senha, cpf, contato):
+    def insert_user(self, usuario: Usuario):
         try:
-            # Criação do novo usuário
-            new_user = Usuario(nome=nome, email=email, senha=senha, cpf=cpf, contato=contato)
+            self.session.add(usuario)
+            self.session.commit()
+            self.session.refresh(usuario)
 
-            # Adiciona o usuário à sessão
-            self.session.add(new_user)
-            self.session.commit()  # Tenta realizar o commit na transação
-
-            # Atualiza o objeto new_user com os dados do banco
-            self.session.refresh(new_user)
-
-            print(f"Usuário {nome} inserido com sucesso!")
-            return new_user
+            print(f"Usuário {usuario.nome} inserido com sucesso!")
+            return usuario
         except IntegrityError as e:
             print(f"Erro de integridade: {e}")
             self.session.rollback()
@@ -31,7 +25,7 @@ class UsuarioRepository:
             print(f"Erro ao inserir usuário: {e}")
             self.session.rollback()
         finally:
-            self.session.close()  # Fechar a sessão após a operação
+            self.session.close()
 
     def list_users(self):
         try:
@@ -124,6 +118,15 @@ class UsuarioRepository:
             return self.session.query(Usuario).filter_by(cpf=cpf).first()
         except Exception as e:
             print(f"Erro ao buscar usuário por CPF: {e}")
+            return None
+        finally:
+            self.session.close()
+
+    def get_user_by_id(self, usuario_id: int):
+        try:
+            return self.session.query(Usuario).filter_by(id=usuario_id).first()
+        except Exception as e:
+            print(f"Erro ao buscar usuário por ID: {e}")
             return None
         finally:
             self.session.close()

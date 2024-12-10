@@ -1,10 +1,13 @@
+import bcrypt
 from sqlalchemy.orm import Session
 
 from src.db.connection import Session as DBSession
 from src.dto.user_dto import UsuarioDTO
-from src.exceptions.user_exception import UserNotFoundException, UserAlreadyExistsException
+from src.exceptions.user_exception import UserNotFoundException, UserAlreadyExistsException, InvalidDataException
 from src.mapper.user_mapper import dto_to_entity, entity_to_dto
+from src.model.user import Usuario
 from src.repository.user_repository import UsuarioRepository
+from src.repository.agendamento_repository import AgendamentoRepository
 
 
 class UsuarioService:
@@ -12,26 +15,33 @@ class UsuarioService:
     def __init__(self, session: Session = None):
         self.session = session or DBSession()
         self.usuario_repo = UsuarioRepository(self.session)
+        self.agendamento_repo = AgendamentoRepository(self.session)
+
+    def login(self, email, senha):
+        usuario = self.buscar_usuario_por_email(email)
+        user_entity = dto_to_entity(usuario)
+
+        if not user_entity.validar_senha(senha):
+            raise InvalidDataException("Senha inválida.")
+
+        return usuario
 
     def criar_usuario(self, usuario_dto: UsuarioDTO):
         if self.usuario_repo.get_user_by_cpf(usuario_dto.cpf):
-            raise UserAlreadyExistsException("CPF já existe.")
+            raise UserAlreadyExistsException("Usuário já existe.")
 
-        if self.usuario_repo.get_user_by_email(usuario_dto.email):
-            raise UserAlreadyExistsException("E-mail já existe.")
+        salt = bcrypt.gensalt()
+        senha_hash = bcrypt.hashpw(usuario_dto.senha.encode('utf-8'), salt).decode('utf-8')
 
-        usuario = self.usuario_repo.insert_user(
+        novo_usuario = Usuario(
             nome=usuario_dto.nome,
             email=usuario_dto.email,
-            senha=usuario_dto.senha,
+            senha=senha_hash,
             cpf=usuario_dto.cpf,
             contato=usuario_dto.contato
         )
-
-        if not usuario:
-            raise Exception("Erro ao criar o usuário. Usuário não foi inserido.")
-
-        return entity_to_dto(usuario)
+        self.usuario_repo.insert_user(novo_usuario)
+        return entity_to_dto(novo_usuario)
 
     def buscar_usuario_por_cpf(self, cpf: str):
         usuario = self.usuario_repo.get_user_by_cpf(cpf)
@@ -62,5 +72,12 @@ class UsuarioService:
 
         self.usuario_repo.delete_user(usuario.id)
 
+    def buscar_agendamentos_por_usuario_cpf(self, cpf: str):
+        usuario = self.usuario_repo.get_user_by_cpf(cpf)
+        if not usuario:
+            raise UserNotFoundException("Usuário não encontrado.")
+
+        agendamentos = usuario.agendamentos.all()
+        return agendamentos
 
 

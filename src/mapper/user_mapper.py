@@ -4,7 +4,6 @@ from src.dto.user_dto import UsuarioDTO
 
 def dto_to_entity(usuario_dto: UsuarioDTO) -> Usuario:
     return Usuario(
-        id=usuario_dto.id,
         nome=usuario_dto.nome,
         email=usuario_dto.email,
         senha=usuario_dto.senha,

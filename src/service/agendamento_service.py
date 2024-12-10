@@ -1,80 +1,71 @@
-from sqlalchemy.orm import Session
-from src.db.connection import Session as DBSession
+import logging
+
 from src.dto.agendamento_dto import AgendamentoDTO
-from src.exceptions.agendamento_exception import AgendamentoNotFoundException
-from src.mapper.agendamento_mapper import dto_to_entity, entity_to_dto
+from src.mapper.agendamento_mapper import dto_to_entity
+from src.mapper.user_mapper import entity_to_dto
 from src.repository.agendamento_repository import AgendamentoRepository
+from src.model.agendamento import Agendamento
+from src.db.connection import Session
+from datetime import datetime
+
+from src.repository.user_repository import UsuarioRepository
 
 
 class AgendamentoService:
-
     def __init__(self, session: Session = None):
-        self.session = session or DBSession()
-        self.agendamento_repo = AgendamentoRepository(self.session)
+        self.agendamento_repo = AgendamentoRepository(session)
 
-    def criar_agendamento(self, agendamento_dto: AgendamentoDTO):
-        # Verificar se já existe um agendamento com o mesmo CPF e data/hora
-        existing_agendamento = self.agendamento_repo.get_agendamentos_by_cpf(agendamento_dto.cpf)
-        for agendamento in existing_agendamento:
-            if agendamento.data == agendamento_dto.data and agendamento.hora == agendamento_dto.hora:
-                raise AgendamentoNotFoundException("Já existe um agendamento para este CPF na data e hora informada.")
+    def create_agendamento(self, dto: AgendamentoDTO):
+        try:
+            usuario = self.agendamento_repo.get_usuario_by_cpf(dto.usuario_cpf)
 
-        # Inserir novo agendamento
-        agendamento = self.agendamento_repo.insert_agendamento(
-            nome=agendamento_dto.nome,
-            cpf=agendamento_dto.cpf,
-            servico=agendamento_dto.servico,
-            contato=agendamento_dto.contato,
-            local=agendamento_dto.local,
-            data=agendamento_dto.data,
-            hora=agendamento_dto.hora
-        )
+            if not usuario:
+                raise Exception(f"Usuário com CPF {dto.usuario_cpf} não encontrado.")
 
-        if not agendamento:
-            raise Exception("Erro ao criar o agendamento. Agendamento não foi inserido.")
+            new_agendamento = Agendamento(servico=dto.servico,
+                                          contato=dto.contato,
+                                          local=dto.local,
+                                          data=dto.data,
+                                          hora=dto.hora,
+                                          usuario=usuario)
+            agendamento = self.agendamento_repo.insert_agendamento(new_agendamento)
 
-        return entity_to_dto(agendamento)
+            return agendamento
+        except Exception as e:
+            logging.error(f"Erro ao criar agendamento: {str(e)}")
+            raise Exception(f"Erro ao criar agendamento: {e}")
 
-    def buscar_agendamento_por_cpf(self, cpf: str):
-        # Buscar todos os agendamentos por CPF
-        agendamentos = self.agendamento_repo.get_agendamentos_by_cpf(cpf)
-        if not agendamentos:
-            raise AgendamentoNotFoundException("Nenhum agendamento encontrado para o CPF informado.")
-        return [entity_to_dto(agendamento) for agendamento in agendamentos]
+    def list_agendamentos(self):
+        try:
+            agendamentos = self.agendamento_repo.list_agendamentos()
+            return agendamentos
+        except Exception as e:
+            print(f"Erro ao listar agendamentos: {e}")
+            raise Exception(f"Erro ao listar agendamentos: {e}")
 
-    def buscar_agendamento_por_id(self, agendamento_id: int):
-        # Buscar agendamento por ID
-        agendamento = self.agendamento_repo.get_agendamento_by_id(agendamento_id)
-        if not agendamento:
-            raise AgendamentoNotFoundException("Agendamento não encontrado.")
-        return entity_to_dto(agendamento)
+    def update_agendamento(self, agendamento_id, nome=None, cpf=None, servico=None, contato=None, local=None, data=None,
+                           hora=None):
+        try:
+            agendamento = self.agendamento_repo.update_agendamento(agendamento_id, nome, cpf, servico, contato, local,
+                                                                   data, hora)
+            if not agendamento:
+                print(f"Agendamento com ID {agendamento_id} não encontrado para atualização.")
+            return agendamento
+        except Exception as e:
+            print(f"Erro ao atualizar agendamento: {e}")
+            raise Exception(f"Erro ao atualizar agendamento: {e}")
 
-    def atualizar_agendamento(self, agendamento_dto: AgendamentoDTO):
-        # Buscar o agendamento pelo ID
-        agendamento = self.agendamento_repo.get_agendamento_by_id(agendamento_dto.id)
-        if not agendamento:
-            raise AgendamentoNotFoundException("Agendamento não encontrado.")
+    def delete_agendamento(self, agendamento_id):
+        try:
+            self.agendamento_repo.delete_agendamento(agendamento_id)
+        except Exception as e:
+            print(f"Erro ao deletar agendamento: {e}")
+            raise Exception(f"Erro ao deletar agendamento: {e}")
 
-        # Atualizar as informações do agendamento
-        agendamento_entity = dto_to_entity(agendamento_dto)
-        updated_agendamento = self.agendamento_repo.update_agendamento(
-            agendamento.id,
-            nome=agendamento_entity.nome,
-            cpf=agendamento_entity.cpf,
-            servico=agendamento_entity.servico,
-            contato=agendamento_entity.contato,
-            local=agendamento_entity.local,
-            data=agendamento_entity.data,
-            hora=agendamento_entity.hora
-        )
-
-        return entity_to_dto(updated_agendamento)
-
-    def deletar_agendamento(self, agendamento_id: int):
-        # Buscar o agendamento pelo ID
-        agendamento = self.agendamento_repo.get_agendamento_by_id(agendamento_id)
-        if not agendamento:
-            raise AgendamentoNotFoundException("Agendamento não encontrado.")
-
-        # Deletar o agendamento
-        self.agendamento_repo.delete_agendamento(agendamento_id)
+    def get_agendamentos_by_cpf(self, cpf):
+        try:
+            agendamentos = self.agendamento_repo.get_agendamentos_by_cpf(cpf)
+            return agendamentos
+        except Exception as e:
+            print(f"Erro ao buscar agendamentos para o CPF {cpf}: {e}")
+            raise Exception(f"Erro ao buscar agendamentos para o CPF {cpf}: {e}")

@@ -1,30 +1,35 @@
 from datetime import date, time
 
 class AgendamentoDTO:
-    def __init__(self, id=None, nome: str = None, cpf: str = None, servico: str = None,
-                 contato: str = None, local: str = None, data: date = None, hora: time = None):
+    def __init__(self, id=None, servico: str = None, contato: str = None, local: str = None,
+                 data: date = None, hora: time = None, usuario_cpf: str = None):
         self.id = id
-        self.nome = nome
-        self.cpf = cpf
         self.servico = servico
         self.contato = contato
         self.local = local
         self.data = data
         self.hora = hora
+        self.usuario_cpf = usuario_cpf
 
     def to_dict(self):
         return {
             'id': self.id,
-            'nome': self.nome,
-            'cpf': self.cpf,
             'servico': self.servico,
             'contato': self.contato,
             'local': self.local,
-            'data': self.data.strftime('%Y-%m-%d') if self.data else None,  # Formato 'YYYY-MM-DD'
-            'hora': self.hora.strftime('%H:%M:%S') if self.hora else None  # Formato 'HH:MM:SS'
+            'data': self.data.strftime('%Y-%m-%d') if self.data else None,
+            'hora': self.hora.strftime('%H:%M') if self.hora else None,
+            'usuario_cpf': self.usuario_cpf
         }
 
-    def __repr__(self):
-        return (f"AgendamentoDTO(id={self.id}, nome={self.nome}, cpf={self.cpf}, "
-                f"servico={self.servico}, contato={self.contato}, local={self.local}, "
-                f"data={self.data}, hora={self.hora})")
+    @classmethod
+    def from_agendamento(cls, agendamento):
+        return cls(
+            id=agendamento.id,
+            servico=agendamento.servico,
+            contato=agendamento.contato,
+            local=agendamento.local,
+            data=agendamento.data,
+            hora=agendamento.hora,
+            usuario_cpf=agendamento.usuario.cpf
+        )

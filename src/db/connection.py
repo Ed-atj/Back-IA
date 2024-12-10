@@ -16,7 +16,6 @@ SQLALCHEMY_DATABASE_URI = f"mysql+mysqlconnector://{DATABASE_USERNAME}:{DATABASE
 engine = create_engine(SQLALCHEMY_DATABASE_URI)
 
 Base = declarative_base()
-
 Session = sessionmaker(bind=engine)
 
 def SessionLocal():

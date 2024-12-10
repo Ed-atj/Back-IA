@@ -8,13 +8,12 @@ def entity_to_dto(agendamento):
 
     return AgendamentoDTO(
         id=agendamento.id,
-        nome=agendamento.nome,
-        cpf=agendamento.cpf,
         servico=agendamento.servico,
         contato=agendamento.contato,
         local=agendamento.local,
         data=agendamento.data,
-        hora=agendamento.hora
+        hora=agendamento.hora,
+        usuario_cpf=agendamento.usuario.cpf
     )
 
 def dto_to_entity(dto):
@@ -24,11 +23,10 @@ def dto_to_entity(dto):
 
     return Agendamento(
         id=dto.id,
-        nome=dto.nome,
-        cpf=dto.cpf,
         servico=dto.servico,
         contato=dto.contato,
         local=dto.local,
         data=dto.data,
-        hora=dto.hora
+        hora=dto.hora,
+        usuario_cpf=dto.usuario_cpf
     )
